@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LernQuest">
+<title>LernQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2EEF7;--surface:#FFFFFF;--ink:#24163A;--muted:#6E6283;--line:#DDD4EA;
+  --accent:#2FAE8C;--accent-ink:#FFFFFF;--xp:#7B5CD6;--hp:#D9475B;--soft:#E8E0F3;--gold:#E3A72F;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#160E22;--surface:#22182F;--ink:#F1EBFA;--muted:#A699BA;--line:#382A4C;
+  --accent:#3FCBA3;--accent-ink:#0E2A22;--xp:#9C82F0;--hp:#F06A7C;--soft:#2C2040;--gold:#F2BE4E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#160E22;--surface:#22182F;--ink:#F1EBFA;--muted:#A699BA;--line:#382A4C;
+  --accent:#3FCBA3;--accent-ink:#0E2A22;--xp:#9C82F0;--hp:#F06A7C;--soft:#2C2040;--gold:#F2BE4E;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.45;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+input{-webkit-user-select:text;user-select:text}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:960px;margin:0 auto;padding:22px 20px 60px}
+
+/* Spieler-Kopf */
+.player{display:flex;align-items:center;gap:18px;margin-bottom:26px}
+.lvl{flex:none;width:78px;height:78px;border-radius:24px;background:var(--xp);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.lvl small{font-size:13px;opacity:.85}
+.lvl b{font-size:34px;font-weight:800}
+.player .info{flex:1;min-width:0}
+.player h1{margin:0;font-size:clamp(26px,4.5vw,38px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.rank{color:var(--muted);font-size:15px;margin:2px 0 8px}
+.bar{height:14px;background:var(--soft);border-radius:14px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:14px;transition:width .6s cubic-bezier(.2,.9,.3,1.2)}
+.bar.xp i{background:var(--xp)}
+.bar.hp i{background:var(--hp)}
+.bar.sub i{background:var(--c)}
+.barlbl{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* Tagesziel & Streak */
+.daily{display:flex;align-items:center;gap:16px;background:var(--surface);border-radius:22px;padding:16px 18px;margin:-8px 0 24px;border:2px solid var(--line)}
+.daily.ok{border-color:var(--gold)}
+.flame{flex:none;width:78px;text-align:center;line-height:1}
+.flame b{display:block;font-size:34px;font-weight:800;color:var(--gold)}
+.flame small{font-size:13px;color:var(--muted)}
+.daily .info{flex:1;min-width:0}
+.dt{font-weight:800;font-size:19px}
+.dots{display:flex;gap:6px;margin:8px 0 4px;flex-wrap:wrap}
+.dots span{width:22px;height:22px;border-radius:7px;background:var(--soft);transition:background .3s}
+.dots span.on{background:var(--gold)}
+.gset{display:flex;flex-direction:column;gap:6px}
+.gset button{width:40px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:800}
+
+/* Kacheln */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tile{position:relative;text-align:left;border:0;background:var(--surface);border-radius:24px;padding:20px;min-height:180px;display:flex;flex-direction:column;box-shadow:inset 0 -6px 0 var(--c);transition:transform .12s}
+.tile:active{transform:scale(.97)}
+.tile .emo{font-size:38px;line-height:1}
+.tile .n{font-weight:800;font-size:22px;margin-top:10px}
+.tile .m{color:var(--muted);font-size:15px;margin-bottom:auto}
+.tile .bar{margin-top:14px;height:10px}
+.tile.cleared::after{content:"✓ Besiegt";position:absolute;top:16px;right:16px;background:var(--gold);color:#3A2500;font-weight:800;font-size:13px;padding:4px 10px;border-radius:20px}
+.tile.add{box-shadow:none;border:2px dashed var(--line);background:none;align-items:center;justify-content:center;color:var(--muted);font-weight:600}
+.tile.add span{font-size:40px;line-height:1}
+
+/* Fach-Ansicht */
+.back{border:0;background:none;color:var(--muted);padding:0;font-weight:600;font-size:17px;margin-bottom:14px}
+.head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.head .emo{font-size:52px;line-height:1}
+.head h1{margin:0;font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.boss{background:var(--surface);border-radius:24px;padding:20px;margin-bottom:22px;border:2px solid var(--line)}
+.boss .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.boss .title{font-weight:800;font-size:21px}
+.boss .when{font-weight:800;color:var(--hp)}
+.boss .bar{height:18px;margin-top:12px}
+.boss.dead{border-color:var(--gold)}
+.boss.dead .when{color:var(--gold)}
+.boss .noexam{color:var(--muted)}
+.boss .edit{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+h2{font-size:22px;font-weight:800;margin:0 0 10px}
+.topics{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.topic{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:18px;padding:14px 16px}
+.topic .chk{flex:none;width:40px;height:40px;border-radius:14px;border:3px solid var(--line);background:none;font-size:20px;font-weight:800;color:var(--accent-ink)}
+.topic.done .chk{background:var(--accent);border-color:var(--accent)}
+.topic .t{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.topic.done .t{color:var(--muted);text-decoration:line-through}
+.topic .t small{display:block;font-weight:400;color:var(--muted);text-decoration:none}
+.topic .x{flex:none;font-weight:800;font-size:14px;color:var(--xp);background:var(--soft);padding:4px 10px;border-radius:20px}
+.topic .del{flex:none;border:0;background:none;color:var(--muted);font-size:20px;padding:4px 6px}
+.empty{color:var(--muted);background:var(--surface);border-radius:18px;padding:16px}
+.adder{background:var(--surface);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+input[type=text],input[type=date]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:48px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 14px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--xp);border-color:var(--xp);color:#fff}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 18px;font-weight:700;min-height:46px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--hp)}
+.lbl{font-size:15px;color:var(--muted)}
+.emojis{display:flex;gap:6px;flex-wrap:wrap}
+.emojis button{width:46px;height:46px;border-radius:12px;border:2px solid transparent;background:var(--bg);font-size:24px}
+.emojis button[aria-pressed="true"]{border-color:var(--xp)}
+.foot{margin-top:40px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* Feedback */
+.float{position:fixed;font-weight:800;font-size:26px;color:var(--xp);pointer-events:none;z-index:9;animation:up 1s ease-out forwards}
+@keyframes up{to{transform:translateY(-70px);opacity:0}}
+.burst{position:fixed;inset:0;pointer-events:none;z-index:8}
+.burst span{position:absolute;width:11px;height:11px;border-radius:3px;animation:fall 1.3s ease-out forwards}
+@keyframes fall{to{transform:translate(var(--dx),var(--dy)) rotate(600deg);opacity:0}}
+.modal{position:fixed;inset:0;background:rgba(20,10,35,.6);display:flex;align-items:center;justify-content:center;z-index:10;padding:20px}
+.modal .box{background:var(--surface);border-radius:28px;padding:30px;text-align:center;max-width:380px;width:100%;animation:pop .4s cubic-bezier(.2,.9,.3,1.4)}
+.modal .big{font-size:64px;line-height:1}
+.modal h3{font-size:30px;font-weight:800;margin:12px 0 4px}
+.modal p{color:var(--muted);margin:0 0 20px}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){.burst,.float{display:none}.modal .box{animation:none}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+(function(){
+const KEY="lernquest.v1";
+const COLORS=["#7B5CD6","#2FAE8C","#E0803A","#3D8BD9","#D9475B","#C9A227","#C2549E"];
+const EMOJIS=["📊","💻","🧮","📈","🗄️","⚖️","🧠","🌐","📚","🔐"];
+const DIFF={1:{n:"Leicht",xp:50},2:{n:"Mittel",xp:100},3:{n:"Schwer",xp:150}};
+const RANKS=["Erstsemester","Lernlehrling","Wissensjägerin","Prüfungskriegerin","Skript-Bezwingerin","Bossjägerin","Fachgenie","Legende der FH"];
+let S=load(),open=null,newDiff=2,newEmoji=EMOJIS[0];
+
+function blank(){return{xp:0,subjects:[],goal:2,daily:{date:null,count:0},streak:{last:null,count:0}}}
+function load(){try{const r=localStorage.getItem(KEY);return r?Object.assign(blank(),JSON.parse(r)):blank()}catch(e){return blank()}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayStr=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const days=d=>Math.round((new Date(d+"T00:00")-new Date(todayStr()+"T00:00"))/864e5);
+const fmtDate=d=>new Date(d+"T00:00").toLocaleDateString("de-AT",{day:"numeric",month:"long"});
+
+/* Level: jedes Level braucht 100 XP mehr als das vorige */
+function levelInfo(xp){let lvl=1,need=200,rest=xp;while(rest>=need){rest-=need;lvl++;need+=100}return{lvl,rest,need}}
+const rankName=l=>RANKS[Math.min(RANKS.length-1,Math.floor((l-1)/2))];
+function ymd(off){const d=new Date();d.setDate(d.getDate()+off);return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+function todayCount(){return S.daily.date===todayStr()?S.daily.count:0}
+function curStreak(){return(S.streak.last===todayStr()||S.streak.last===ymd(-1))?S.streak.count:0}
+function bump(n){const t=todayStr();if(S.daily.date!==t)S.daily={date:t,count:0};const before=S.daily.count;S.daily.count=Math.max(0,before+n);
+  if(before<S.goal&&S.daily.count>=S.goal&&S.streak.last!==t){S.streak.count=(S.streak.last===ymd(-1)?S.streak.count:0)+1;S.streak.last=t;S.xp+=50}}
+function dailyHTML(){const c=todayCount(),g=S.goal,ok=c>=g,st=curStreak();
+  return`<div class="daily ${ok?"ok":""}"><div class="flame"><b>${st}</b><small>${st===1?"Tag":"Tage"} 🔥</small></div><div class="info"><div class="dt">${ok?"Tagesziel geschafft!":"Tagesziel: "+g+" "+(g===1?"Thema":"Themen")}</div><div class="dots">${Array.from({length:g},(_,i)=>`<span class="${i<c?"on":""}"></span>`).join("")}</div><div class="rank">${ok?"Streak für heute gesichert. Alles darüber ist Bonus.":st?"Noch "+(g-c)+" bis die Streak hält.":"Schaff es heute und starte eine Streak. Bonus: +50 XP."}</div></div><div class="gset"><button data-act="goal" data-d="1" aria-label="Tagesziel erhöhen">+</button><button data-act="goal" data-d="-1" aria-label="Tagesziel verringern">−</button></div></div>`}
+const subXP=s=>s.topics.reduce((a,t)=>a+DIFF[t.diff].xp,0);
+const subDone=s=>s.topics.filter(t=>t.done).reduce((a,t)=>a+DIFF[t.diff].xp,0);
+
+function render(){document.getElementById("app").innerHTML=open?vSubject():vHome()}
+
+function playerHTML(){const L=levelInfo(S.xp);
+  return`<div class="player"><div class="lvl"><small>Level</small><b>${L.lvl}</b></div><div class="info"><h1>Hallo Sofija</h1><div class="rank">${rankName(L.lvl)} · ${S.xp} XP gesamt</div>
+  <div class="bar xp"><i style="width:${Math.round(L.rest/L.need*100)}%"></i></div><div class="barlbl"><span>Nächstes Level</span><span>${L.rest} / ${L.need} XP</span></div></div></div>`+dailyHTML()}
+
+function vHome(){
+  const tiles=S.subjects.map(s=>{const tot=subXP(s),done=subDone(s),pct=tot?Math.round(done/tot*100):0,cleared=tot>0&&done===tot;
+    let m="Noch kein Test eingetragen";if(s.examDate){const d=days(s.examDate);m=d<0?"Test vorbei":d===0?"Test ist heute":d===1?"Test morgen":`Test in ${d} Tagen`}
+    return`<button class="tile ${cleared?"cleared":""}" style="--c:${s.color}" data-act="open" data-id="${s.id}"><div class="emo">${s.emoji}</div><div class="n">${esc(s.name)}</div><div class="m">${m} · ${s.topics.filter(t=>t.done).length}/${s.topics.length} Themen</div><div class="bar sub"><i style="width:${pct}%"></i></div></button>`}).join("");
+  return playerHTML()+`<div class="grid">${tiles}<button class="tile add" data-act="newSubj"><span>＋</span>Fach hinzufügen</button></div>
+  <div id="newBox"></div>`;
+}
+
+function newSubjHTML(){return`<div class="adder" style="margin-top:16px"><span class="lbl">Wie heißt das Fach?</span><input type="text" id="sn" placeholder="z. B. Datenbanken">
+  <span class="lbl">Symbol</span><div class="emojis">${EMOJIS.map(e=>`<button data-act="emo" data-e="${e}" aria-pressed="${e===newEmoji}">${e}</button>`).join("")}</div>
+  <div class="row"><button class="btn primary" data-act="addSubj">Fach anlegen</button><button class="btn" data-act="cancelNew">Abbrechen</button></div></div>`}
+
+function vSubject(){
+  const s=S.subjects.find(x=>x.id===open);if(!s){open=null;return vHome()}
+  const tot=subXP(s),done=subDone(s),hp=tot?Math.round((tot-done)/tot*100):100,dead=tot>0&&done===tot;
+  let boss;
+  if(s.examDate){const d=days(s.examDate);
+    boss=`<div class="boss ${dead?"dead":""}"><div class="top"><span class="title">👾 Boss: ${esc(s.examTitle||"Test")} am ${fmtDate(s.examDate)}</span><span class="when">${dead?"Besiegt!":d<0?"vorbei":d===0?"Heute!":d===1?"Morgen!":"noch "+d+" Tage"}</span></div>
+    <div class="bar hp"><i style="width:${hp}%"></i></div><div class="barlbl"><span>Lebenspunkte des Bosses</span><span>${tot-done} / ${tot} HP</span></div>
+    ${!dead&&d>0&&s.topics.some(t=>!t.done)?`<div class="barlbl"><span>Tempo: etwa ${Math.ceil(s.topics.filter(t=>!t.done).length/Math.max(1,d)*7)} Themen pro Woche</span><span></span></div>`:""}
+    <div class="edit"><button class="btn" data-act="editExam">Test ändern</button></div></div>`}
+  else boss=`<div class="boss"><span class="noexam">Wann ist der Test? Trag ihn ein, dann wird er zum Boss.</span><div class="edit"><button class="btn primary" data-act="editExam">Test eintragen</button></div></div>`;
+  const list=s.topics.map(t=>`<li class="topic ${t.done?"done":""}"><button class="chk" data-act="tgl" data-id="${t.id}" aria-label="Thema abschließen">${t.done?"✓":""}</button>
+    <span class="t">${esc(t.title)}${t.until?`<small>bis ${fmtDate(t.until)}</small>`:""}</span><span class="x">+${DIFF[t.diff].xp} XP</span><button class="del" data-act="delTopic" data-id="${t.id}" aria-label="Thema löschen">✕</button></li>`).join("");
+  return`<button class="back" data-act="home">‹ Alle Fächer</button><div class="head"><span class="emo">${s.emoji}</span><h1>${esc(s.name)}</h1></div>
+  ${boss}<div id="examBox"></div>
+  <h2>Was du können musst</h2>
+  <ul class="topics">${list||`<li class="empty">Noch keine Themen. Schreib auf, was zum Test kommt – jedes Thema ist ein Treffer gegen den Boss.</li>`}</ul>
+  <div class="adder"><input type="text" id="tn" placeholder="Neues Thema, z. B. SQL Joins">
+    <div class="row"><span class="lbl">Wie schwer?</span><div class="seg">${[1,2,3].map(k=>`<button data-act="diff" data-k="${k}" aria-pressed="${k===newDiff}">${DIFF[k].n} · ${DIFF[k].xp} XP</button>`).join("")}</div></div>
+    <div class="row"><span class="lbl">Fertig bis (optional)</span><input type="date" id="tu" style="width:auto;flex:1;min-width:160px"></div>
+    <div class="row"><button class="btn primary" data-act="addTopic">Thema hinzufügen</button></div></div>
+  <div class="foot"><button class="btn danger" data-act="delSubj">Fach löschen</button></div>`;
+}
+
+/* Effekte */
+function floatXP(el,txt){const r=el.getBoundingClientRect();const f=document.createElement("div");f.className="float";f.textContent=txt;f.style.left=(r.left+r.width/2-30)+"px";f.style.top=(r.top-10)+"px";document.body.appendChild(f);setTimeout(()=>f.remove(),1000)}
+function burst(n=40){const b=document.createElement("div");b.className="burst";for(let i=0;i<n;i++){const s=document.createElement("span");s.style.left="50%";s.style.top="45%";s.style.background=COLORS[i%COLORS.length];s.style.setProperty("--dx",(Math.random()*700-350)+"px");s.style.setProperty("--dy",(Math.random()*600-200)+"px");b.appendChild(s)}document.body.appendChild(b);setTimeout(()=>b.remove(),1400)}
+function modal(big,title,text){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="box"><div class="big">${big}</div><h3>${esc(title)}</h3><p>${esc(text)}</p><button class="btn primary">Weiter</button></div>`;m.addEventListener("click",e=>{if(e.target===m||e.target.tagName==="BUTTON")m.remove()});document.body.appendChild(m);burst(70)}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+
+document.getElementById("app").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,v=id=>(document.getElementById(id)||{}).value||"";
+  const s=S.subjects.find(x=>x.id===open);
+  switch(a){
+    case"open":open=b.dataset.id;newDiff=2;window.scrollTo(0,0);break;
+    case"home":open=null;window.scrollTo(0,0);break;
+    case"newSubj":document.getElementById("newBox").innerHTML=newSubjHTML();document.getElementById("sn").focus();return;
+    case"cancelNew":document.getElementById("newBox").innerHTML="";return;
+    case"emo":newEmoji=b.dataset.e;document.querySelectorAll(".emojis button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.e===newEmoji));return;
+    case"addSubj":{const n=v("sn").trim();if(!n)return;S.subjects.push({id:uid(),name:n,emoji:newEmoji,color:COLORS[S.subjects.length%COLORS.length],examDate:null,examTitle:"",topics:[]});save();break}
+    case"editExam":document.getElementById("examBox").innerHTML=`<div class="adder" style="margin:-10px 0 22px"><input type="text" id="xt" placeholder="z. B. Zwischentest" value="${esc(s.examTitle||"")}"><input type="date" id="xd" value="${s.examDate||""}"><div class="row"><button class="btn primary" data-act="saveExam">Speichern</button>${s.examDate?`<button class="btn danger" data-act="clearExam">Test entfernen</button>`:""}</div></div>`;return;
+    case"saveExam":{const d=v("xd");if(!d)return;s.examDate=d;s.examTitle=v("xt").trim()||"Test";save();break}
+    case"clearExam":s.examDate=null;s.examTitle="";save();break;
+    case"diff":newDiff=+b.dataset.k;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.k===newDiff));return;
+    case"addTopic":{const t=v("tn").trim();if(!t)return;s.topics.push({id:uid(),title:t,diff:newDiff,until:v("tu")||null,done:false});save();render();const i=document.getElementById("tn");i&&i.focus();return}
+    case"delTopic":{const t=s.topics.find(x=>x.id===b.dataset.id);if(t.done)S.xp=Math.max(0,S.xp-DIFF[t.diff].xp);s.topics=s.topics.filter(x=>x.id!==t.id);save();break}
+    case"tgl":{const t=s.topics.find(x=>x.id===b.dataset.id);const before=levelInfo(S.xp).lvl;const gain=DIFF[t.diff].xp;t.done=!t.done;S.xp=Math.max(0,S.xp+(t.done?gain:-gain));const wasOk=todayCount()>=S.goal;bump(t.done?1:-1);const nowOk=todayCount()>=S.goal;save();render();
+      if(t.done){const el=document.querySelector(`[data-id="${t.id}"]`);el&&floatXP(el,"+"+gain+" XP");burst(30);buzz(30);
+        const after=levelInfo(S.xp).lvl;const allDone=s.topics.length&&s.topics.every(x=>x.done);
+        if(!wasOk&&nowOk&&t.done)setTimeout(()=>modal("🔥","Tagesziel geschafft!",`Streak: ${curStreak()} ${curStreak()===1?"Tag":"Tage"} · +50 XP Bonus. Alles darüber ist Kür.`),350);
+        else if(allDone)setTimeout(()=>modal("🏆",(s.examTitle||"Der Boss")+" besiegt!",`Alle Themen in ${s.name} sitzen. Jetzt nur noch hingehen und abholen.`),350);
+        else if(after>before)setTimeout(()=>modal("⭐",`Level ${after}!`,`Neuer Rang: ${rankName(after)}.`),350)}
+      return}
+    case"goal":S.goal=Math.min(10,Math.max(1,S.goal+(+b.dataset.d)));save();break;
+    case"delSubj":if(!confirm(`„${s.name}“ mit allen Themen löschen?`))return;S.subjects=S.subjects.filter(x=>x.id!==open);open=null;save();break;
+  }
+  render();
+});
+document.getElementById("app").addEventListener("keydown",e=>{if(e.key!=="Enter")return;if(e.target.id==="tn")document.querySelector('[data-act="addTopic"]').click();if(e.target.id==="sn")document.querySelector('[data-act="addSubj"]').click()});
+render();
+})();
+</script>
+</body>
+</html>
